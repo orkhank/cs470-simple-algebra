@@ -1,18 +1,303 @@
-from algebra import prime_field
+import typing as t
+
+import algb
 
 
 def main():
-    field = prime_field(7)
-    addition = field.additive_group
-    multiplication = field.multiplicative_group
+    mod7 = algb.FieldCandidate(
+        add=_mod7_add,
+        negate=_mod7_negate,
+        multiply=_mod7_mul,
+        multiplicative_inverse=_mod7_reciprocal,
+        zero="0",
+        one="1",
+        other_elements=("2", "3", "4", "5", "6"),
+    )
 
-    print("3. A field contains two groups (modulo 7)")
-    print("Additive group:", addition.elements)
-    print("Multiplicative group:", multiplication.elements)
-    print("Additive identity:", addition.identity)
-    print("Multiplicative identity:", multiplication.identity)
-    print("Additive inverse of 2:", addition.inverse(2))
-    print("Multiplicative inverse of 2:", multiplication.inverse(2))
+    _ = t.assert_type(mod7, "algb.FieldCandidate")
+
+    assert algb.is_field(mod7)
+
+    _ = t.assert_type(mod7, "algb.Field")
+
+    add_mod7 = algb.extract_additive_group(mod7)
+    mul_mod7 = algb.extract_multiplicative_group(mod7)
+
+    _ = t.assert_type(add_mod7, "algb.CommutativeGroup")
+    _ = t.assert_type(mul_mod7, "algb.CommutativeGroup")
+
+    assert add_mod7.identity == "0"
+    assert mul_mod7.identity == "1"
+
+    additive_elements = (add_mod7.identity, *add_mod7.other_elements)
+    multiplicative_elements = (mul_mod7.identity, *mul_mod7.other_elements)
+
+    assert additive_elements == ("0", "1", "2", "3", "4", "5", "6")
+    assert multiplicative_elements == ("1", "2", "3", "4", "5", "6")
+
+    add2_mod7 = (add_mod7, "2")
+    assert algb.is_transformation(add2_mod7)
+    assert algb.inverse(add2_mod7) == (add_mod7, "5")
+
+    mul2_mod7 = (mul_mod7, "2")
+    assert algb.is_transformation(mul2_mod7)
+    assert algb.inverse(mul2_mod7) == (mul_mod7, "4")
+
+
+def _is_mod7(x: str) -> t.TypeIs[t.Literal["0", "1", "2", "3", "4", "5", "6"]]:
+    return x in {"0", "1", "2", "3", "4", "5", "6"}
+
+
+def _mod7_add(a: str, b: str):
+    if not _is_mod7(a) or not _is_mod7(b):
+        return "UNDEFINED"
+
+    match (a, b):
+        case ("0", "0"):
+            return "0"
+        case ("0", "1"):
+            return "1"
+        case ("0", "2"):
+            return "2"
+        case ("0", "3"):
+            return "3"
+        case ("0", "4"):
+            return "4"
+        case ("0", "5"):
+            return "5"
+        case ("0", "6"):
+            return "6"
+        case ("1", "0"):
+            return "1"
+        case ("1", "1"):
+            return "2"
+        case ("1", "2"):
+            return "3"
+        case ("1", "3"):
+            return "4"
+        case ("1", "4"):
+            return "5"
+        case ("1", "5"):
+            return "6"
+        case ("1", "6"):
+            return "0"
+        case ("2", "0"):
+            return "2"
+        case ("2", "1"):
+            return "3"
+        case ("2", "2"):
+            return "4"
+        case ("2", "3"):
+            return "5"
+        case ("2", "4"):
+            return "6"
+        case ("2", "5"):
+            return "0"
+        case ("2", "6"):
+            return "1"
+        case ("3", "0"):
+            return "3"
+        case ("3", "1"):
+            return "4"
+        case ("3", "2"):
+            return "5"
+        case ("3", "3"):
+            return "6"
+        case ("3", "4"):
+            return "0"
+        case ("3", "5"):
+            return "1"
+        case ("3", "6"):
+            return "2"
+        case ("4", "0"):
+            return "4"
+        case ("4", "1"):
+            return "5"
+        case ("4", "2"):
+            return "6"
+        case ("4", "3"):
+            return "0"
+        case ("4", "4"):
+            return "1"
+        case ("4", "5"):
+            return "2"
+        case ("4", "6"):
+            return "3"
+        case ("5", "0"):
+            return "5"
+        case ("5", "1"):
+            return "6"
+        case ("5", "2"):
+            return "0"
+        case ("5", "3"):
+            return "1"
+        case ("5", "4"):
+            return "2"
+        case ("5", "5"):
+            return "3"
+        case ("5", "6"):
+            return "4"
+        case ("6", "0"):
+            return "6"
+        case ("6", "1"):
+            return "0"
+        case ("6", "2"):
+            return "1"
+        case ("6", "3"):
+            return "2"
+        case ("6", "4"):
+            return "3"
+        case ("6", "5"):
+            return "4"
+        case ("6", "6"):
+            return "5"
+
+
+def _mod7_negate(a: str):
+    if not _is_mod7(a):
+        return "UNDEFINED"
+
+    match a:
+        case "0":
+            return "0"
+        case "1":
+            return "6"
+        case "2":
+            return "5"
+        case "3":
+            return "4"
+        case "4":
+            return "3"
+        case "5":
+            return "2"
+        case "6":
+            return "1"
+
+
+def _mod7_mul(a: str, b: str):
+    if not _is_mod7(a) or not _is_mod7(b):
+        return "UNDEFINED"
+
+    match (a, b):
+        case ("0", "0"):
+            return "0"
+        case ("0", "1"):
+            return "0"
+        case ("0", "2"):
+            return "0"
+        case ("0", "3"):
+            return "0"
+        case ("0", "4"):
+            return "0"
+        case ("0", "5"):
+            return "0"
+        case ("0", "6"):
+            return "0"
+        case ("1", "0"):
+            return "0"
+        case ("1", "1"):
+            return "1"
+        case ("1", "2"):
+            return "2"
+        case ("1", "3"):
+            return "3"
+        case ("1", "4"):
+            return "4"
+        case ("1", "5"):
+            return "5"
+        case ("1", "6"):
+            return "6"
+        case ("2", "0"):
+            return "0"
+        case ("2", "1"):
+            return "2"
+        case ("2", "2"):
+            return "4"
+        case ("2", "3"):
+            return "6"
+        case ("2", "4"):
+            return "1"
+        case ("2", "5"):
+            return "3"
+        case ("2", "6"):
+            return "5"
+        case ("3", "0"):
+            return "0"
+        case ("3", "1"):
+            return "3"
+        case ("3", "2"):
+            return "6"
+        case ("3", "3"):
+            return "2"
+        case ("3", "4"):
+            return "5"
+        case ("3", "5"):
+            return "1"
+        case ("3", "6"):
+            return "4"
+        case ("4", "0"):
+            return "0"
+        case ("4", "1"):
+            return "4"
+        case ("4", "2"):
+            return "1"
+        case ("4", "3"):
+            return "5"
+        case ("4", "4"):
+            return "2"
+        case ("4", "5"):
+            return "6"
+        case ("4", "6"):
+            return "3"
+        case ("5", "0"):
+            return "0"
+        case ("5", "1"):
+            return "5"
+        case ("5", "2"):
+            return "3"
+        case ("5", "3"):
+            return "1"
+        case ("5", "4"):
+            return "6"
+        case ("5", "5"):
+            return "4"
+        case ("5", "6"):
+            return "2"
+        case ("6", "0"):
+            return "0"
+        case ("6", "1"):
+            return "6"
+        case ("6", "2"):
+            return "5"
+        case ("6", "3"):
+            return "4"
+        case ("6", "4"):
+            return "3"
+        case ("6", "5"):
+            return "2"
+        case ("6", "6"):
+            return "1"
+
+
+def _mod7_reciprocal(a: str):
+    if not _is_mod7(a):
+        return "UNDEFINED"
+
+    match a:
+        case "0":
+            return "UNDEFINED"
+        case "1":
+            return "1"
+        case "2":
+            return "4"
+        case "3":
+            return "5"
+        case "4":
+            return "2"
+        case "5":
+            return "3"
+        case "6":
+            return "6"
 
 
 if __name__ == "__main__":

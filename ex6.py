@@ -1,25 +1,174 @@
-from algebra import binary_field
-from polynomials import format_polynomial, is_irreducible, polynomial_multiply
+import typing as t
+
+import algb
 
 
 def main():
-    a = 0b101 # x^2 + 1
-    b = 0b111 # x^2 + x + 1
-    modulus = 0b1011 # x^3 + x + 1
-    field = binary_field(modulus)
-    inverse = field.multiplicative_group.inverse(a)
+    gf4 = algb.FieldCandidate(
+        add=_gf4_add,
+        negate=_gf4_negate,
+        multiply=_gf4_mul,
+        multiplicative_inverse=_gf4_reciprocal,
+        zero="0",
+        one="1",
+        other_elements=("x", "x + 1"),
+    )
 
-    print("6. Binary polynomials over F_2")
-    print("a =", format_polynomial(a))
-    print("b =", format_polynomial(b))
-    print("f =", format_polynomial(modulus))
-    print("f is irreducible:", is_irreducible(modulus))
-    print("a is irreducible:", is_irreducible(a))
-    print("a + b =", format_polynomial(field.add(a, b)))
-    print("a * b =", format_polynomial(polynomial_multiply(a, b)))
-    print("a * b mod f =", format_polynomial(field.multiply(a, b)))
-    print("Inverse of a mod f =", format_polynomial(inverse))
-    print("a * its inverse mod f =", format_polynomial(field.multiply(a, inverse)))
+    assert algb.is_field(gf4)
+
+
+# F_2[x] / (x^2 + x + 1)
+def _is_gf4(
+    x: str,
+) -> t.TypeIs[
+    t.Literal[
+        "0",
+        "1",
+        "x",
+        "x + 1",
+    ]
+]:
+    return x in {
+        "0",
+        "1",
+        "x",
+        "x + 1",
+    }
+
+
+def _gf4_add(a: str, b: str):
+    if not _is_gf4(a) or not _is_gf4(b):
+        return "UNDEFINED"
+
+    # Addition is coefficient-wise XOR.
+    match (a, b):
+        case ("0", "0"):
+            return "0"
+
+        case ("0", "1"):
+            return "1"
+
+        case ("0", "x"):
+            return "x"
+
+        case ("0", "x + 1"):
+            return "x + 1"
+
+        case ("1", "0"):
+            return "1"
+
+        case ("1", "1"):
+            return "0"
+
+        case ("1", "x"):
+            return "x + 1"
+
+        case ("1", "x + 1"):
+            return "x"
+
+        case ("x", "0"):
+            return "x"
+
+        case ("x", "1"):
+            return "x + 1"
+
+        case ("x", "x"):
+            return "0"
+
+        case ("x", "x + 1"):
+            return "1"
+
+        case ("x + 1", "0"):
+            return "x + 1"
+
+        case ("x + 1", "1"):
+            return "x"
+
+        case ("x + 1", "x"):
+            return "1"
+
+        case ("x + 1", "x + 1"):
+            return "0"
+
+
+def _gf4_negate(a: str):
+    if not _is_gf4(a):
+        return "UNDEFINED"
+
+    return a
+
+
+def _gf4_mul(a: str, b: str):
+    if not _is_gf4(a) or not _is_gf4(b):
+        return "UNDEFINED"
+
+    # a * b modulo (x^2 + x + 1)
+    match (a, b):
+        case ("0", "0"):
+            return "0"
+
+        case ("0", "1"):
+            return "0"
+
+        case ("0", "x"):
+            return "0"
+
+        case ("0", "x + 1"):
+            return "0"
+
+        case ("1", "0"):
+            return "0"
+
+        case ("1", "1"):
+            return "1"
+
+        case ("1", "x"):
+            return "x"
+
+        case ("1", "x + 1"):
+            return "x + 1"
+
+        case ("x", "0"):
+            return "0"
+
+        case ("x", "1"):
+            return "x"
+
+        case ("x", "x"):
+            return "x + 1"
+
+        case ("x", "x + 1"):
+            return "1"
+
+        case ("x + 1", "0"):
+            return "0"
+
+        case ("x + 1", "1"):
+            return "x + 1"
+
+        case ("x + 1", "x"):
+            return "1"
+
+        case ("x + 1", "x + 1"):
+            return "x"
+
+
+def _gf4_reciprocal(a: str):
+    if not _is_gf4(a):
+        return "UNDEFINED"
+
+    match a:
+        case "0":
+            return "UNDEFINED"
+
+        case "1":
+            return "1"
+
+        case "x":
+            return "x + 1"
+
+        case "x + 1":
+            return "x"
 
 
 if __name__ == "__main__":
